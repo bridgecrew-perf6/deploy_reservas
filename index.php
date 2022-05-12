@@ -1,5 +1,60 @@
-?php
-  <!DOCTYPE html>
+<?php 
+   include_once ("php/conectar.php");
+   
+   $errorIniciarSesion = 0 ;          // cuando el usuaio haya puesto una contraseña o codigosis equivodo cambiara a 1
+   session_start();
+
+   if (isset($_SESSION['cuenta'] )) {
+       if($_SESSION['cuenta'] == "admin"){
+            header('location: reservas-admin.php');
+       }elseif($_SESSION['cuenta'] == "docente"){
+        header('location: reservas-docente.php');
+                }
+        
+   }
+
+   if (isset($_POST['codigosis']) && isset($_POST['contrasena'])) {
+        $username=$_POST['codigosis'];
+        $password=$_POST['contrasena']; 
+        $usuariodb;
+        $con=conectar();
+        $dbquery= mysqli_query($con,"select codigoSis, contrasena from Docente where codigoSis='$username' and contrasena='$password';");
+        $resultado= mysqli_fetch_array($dbquery);
+        mysqli_close($con);
+        if($resultado != null){
+            $con=conectar();
+            $dbqueryUser=mysqli_query($con, "select nombre, apellido from Docente where codigoSis='$username' and contrasena='$password';");
+            $usuariodb= mysqli_fetch_array($dbqueryUser);
+            mysqli_close($con);
+            $_SESSION['cuenta']= "docente";
+            $_SESSION['nombre']= $usuariodb['nombre'];
+            $_SESSION['apellido']=$usuariodb['apellido'];
+            // tambien agregar el codigoSIS y que tipo de usuario es  docente o administrdor
+            header('location: reservas-docente.php');
+        }else{
+            $con=conectar();
+            $dbquery= mysqli_query($con,"select codigoSis, contrasena from Administrador where codigoSis='$username' and contrasena='$password';");
+            $resultado= mysqli_fetch_array($dbquery);
+            mysqli_close($con);
+            if($resultado != null ){
+                    $con=conectar();
+                    $dbqueryUser=mysqli_query($con, "select nombre, apellido from Administrador where codigoSis='$username' and contrasena='$password';");
+                    $usuariodb= mysqli_fetch_array($dbqueryUser);
+                    mysqli_close($con);
+                    $_SESSION['cuenta']= "admin";
+                    $_SESSION['nombre']= $usuariodb['nombre'];
+                    $_SESSION['apellido']=$usuariodb['apellido'];
+                    // tambien agregar el codigoSIS y que tipo de usuario es  docente o administrdor
+                    header('location: reservas-admin.php');
+            }
+        }
+        $errorIniciarSesion = 1 ; 
+   }
+
+?>
+
+
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset='utf-8'>
@@ -19,47 +74,52 @@
 <body>
 
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container">
-                <a class="navbar-brand me-auto" href="index.html">SAA-UMSS</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item ">
-                            <a class="nav-link  text-center" aria-current="page" href="aulas-admin.html">Aulas</a>
-                        </li>
-                        <li class="nav-item text-center ">
-                            <a class="nav-link text-center" href="docentes-admin.html">Docentes</a>
-                        </li>
-                        <li class="nav-item   text-center">
-                            <a class="nav-link" href="reservas-admin.html">Reservas</a>
-                        </li>
-                        <li class="nav-item  text-center">
-                            <a class="nav-link active" href="index.html">Iniciar Sesion</a>
-                        </li>
-                    </ul>
+        <div class="contenedor-navegacion">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                    <a class="navbar-brand me-auto" href="index.php">SAA-UMSS</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                            
+                            <li class="nav-item  text-center">
+                                <a class="nav-link active" href="index.php">Iniciar Sesion</a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
-        </nav>
+            </nav>
+        </div>
+        
     </header>
 
     <main class="contenido-main-inicio-sesion">
         <div class="inicio-sesion">
             <h1 class="titulo-inicio-sesion">¡BIENVENIDO!</h1>
-            <div class="seccion-input-sesion">
-                <label>CodigoSIS</label>
-                <input type="text" >
-            </div>
+            
+            <form class="form-inicio-sesion" action="index.php" method="post">
+                
+                <div class="seccion-input-sesion">
+                    <label>CodigoSIS</label>
+                    <input type="text" name="codigosis" >
+                </div>
 
-            <div class="seccion-input-sesion">
-                <label>Constaseña</label>
-                <input type="password" >
-            </div>
-
-            <button class="btn-iniciar-sesion">INICIAR SESION</button>
-
+                <div class="seccion-input-sesion">
+                    <label>Constaseña</label>
+                    <input type="password" name="contrasena">
+                    
+                </div>
+                <?php
+                    if($errorIniciarSesion == 1){
+                        echo " <b class ='mensaje-error-sesion'> El codigoSIS o contraseña son incorrectos </b> ";
+                    }
+                ?>
+ 
+                <button class="btn-iniciar-sesion" >INICIAR SESION</button>
+               
+            </form>
         </div>
         <div class="info">
             <img  src="img/imagen-sesion.svg" height="550">
@@ -96,4 +156,3 @@
     <script src="js/script-index.js"></script>
 </body>
 </html>
-?>

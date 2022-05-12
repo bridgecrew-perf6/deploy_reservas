@@ -2,34 +2,34 @@
 
 
   if($_POST){
-     //echo json_encode($_POST);
-     $servidor = "mysql-andre.alwaysdata.net";
-     $usuario="andre_root";
-     $contrasena="adivinala";
-     $BD="andre_base_datos";
-     $conexion = mysqli_connect($servidor,$usuario,$contrasena,$BD);
-
-     $sql = "insert into usuarios (codigosis, nombre, apellido, ci, facultad, departamento, celular, telefono, correo, contrasena)". 
-     "values('"
-     .$_POST["codigosis"]."','"
-     .$_POST["nombre"]."','"
-     .$_POST["apellido"]."','"
-     .$_POST["ci"]."','"
-     .$_POST["facultad"]."','"
-     .$_POST["departamento"]."','"
-     .$_POST["celular"]."','"
-     .$_POST["telefono"]."','"
-     .$_POST["correo"]."','"
-     ."N/A"."')";
-     
-     $result = mysqli_query($conexion,$sql);
-     if($result){
-      echo "1";
-     }else{
-      echo "0";
-     }
-
-     mysqli_close($conexion);
+    $servidor = "mysql-andre.alwaysdata.net";
+    $usuario="andre";
+    $contrasena="cualquiera";
+    $BD="andre_base_datos";
+    
+  
+    try {
+      $conexionPDO = new PDO("mysql:host=$servidor;dbname=$BD",$usuario,$contrasena);
+      $conexionPDO->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+  
+      $codigoSis = $_POST['codigoSis'];
+      $nombre = $_POST['nombre'];
+      $apellido = $_POST['apellido'];
+      $ci= $_POST['ci'];
+      $codFacultad= $_POST['codFacultad'];
+      $contrasena= $_POST['ci'];
+      $celular= $_POST['celular'];
+      $telefono= $_POST['telefono'];
+      $correo= $_POST['correo'];
+      
+      $consulta = "insert into `Docente`(`codigoSis`, `nombre`, `apellido`, `ci`, `codFacultad`, `contrasena`, `celular`, `telefono`, `correo`) VALUES ('$codigoSis','$nombre','$apellido','$ci','$codFacultad','$contrasena','$celular','$telefono','$correo')";
+      
+      $respuesta = "";
+        $respuesta = $conexionPDO->exec($consulta);
+        echo "1";
+    } catch (PDOException $e) {
+        echo($e->getMessage());
+    }
 
   }
 
